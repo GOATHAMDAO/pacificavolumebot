@@ -1,0 +1,18 @@
+{
+    "hold_time_min": 3,
+    "hold_time_max": 5,
+    "target_volume": 100,
+    "leverage": 5,
+    "markets": ["BTC", "ETH", "SOL"],
+    "min_position_size": 0.8,
+    "max_position_size": 0.9,
+    "delay_between_trades_min": 30,
+    "delay_between_trades_max": 60,
+    "use_maker_orders": true,
+    "take_profit_percent_min": 0.002,
+    "take_profit_percent_max": 0.004,
+    "stop_loss_percent_min": 0.002,
+    "stop_loss_percent_max": 0.004,
+    "slippage_min": 0.0003,
+    "slippage_max": 0.0005
+}
