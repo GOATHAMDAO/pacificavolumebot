@@ -3,12 +3,12 @@
 Pacifica Volume Bot v2.0
 ========================
 
-Разработано: GOATHAM DAO
+Developed by: GOATHAM DAO
 
-Чистая реализация согласно официальной документации Pacifica:
+Clean implementation according to official Pacifica documentation:
 https://docs.pacifica.fi/api-documentation/api
 
-Использует официальный Python SDK:
+Uses official Python SDK:
 https://github.com/pacifica-fi/python-sdk
 """
 
@@ -48,38 +48,38 @@ init(autoreset=True)
 
 @dataclass
 class Config:
-    """Конфигурация бота с поддержкой рандомизации"""
-    # Время удержания позиции (минуты)
+    """Bot configuration with randomization support"""
+    # Position hold time (minutes)
     hold_time_min: int = 6
     hold_time_max: int = 12
     
     target_volume: float = 10000  # USD
     
-    # Плечо (фиксированное значение)
+    # Leverage (fixed value)
     leverage: int = 5
     
     markets: List[str] = None
     
-    # Размер позиции (% от баланса, БЕЗ учета плеча)
-    # Например: 0.8 = 80% от баланса, плечо применяется автоматически
-    min_position_size: float = 0.7  # 70% от баланса
-    max_position_size: float = 0.9  # 90% от баланса
+    # Position size (% of balance, WITHOUT leverage)
+    # Example: 0.8 = 80% of balance, leverage is applied automatically
+    min_position_size: float = 0.7  # 70% of balance
+    max_position_size: float = 0.9  # 90% of balance
     
-    # Задержка между сделками (секунды)
+    # Delay between trades (seconds)
     delay_between_trades_min: int = 30
     delay_between_trades_max: int = 60
     
     use_maker_orders: bool = True
     
-    # Take profit (проценты)
+    # Take profit (percentages)
     take_profit_percent_min: float = 0.0005  # 0.05%
     take_profit_percent_max: float = 0.0012  # 0.12%
     
-    # Stop loss (проценты)
+    # Stop loss (percentages)
     stop_loss_percent_min: float = 0.002  # 0.2%
     stop_loss_percent_max: float = 0.004  # 0.4%
     
-    # Slippage для лимитных ордеров (проценты)
+    # Slippage for limit orders (percentages)
     slippage_min: float = 0.0003  # 0.03%
     slippage_max: float = 0.0007  # 0.07%
     
@@ -88,35 +88,35 @@ class Config:
             self.markets = ["BTC", "ETH", "SOL"]
     
     def get_random_hold_time(self) -> int:
-        """Случайное время удержания позиции"""
+        """Random position hold time"""
         return random.randint(self.hold_time_min, self.hold_time_max)
     
     def get_random_position_size(self) -> float:
-        """Случайный размер позиции в процентах от баланса (0.0-1.0)"""
+        """Random position size as percentage of balance (0.0-1.0)"""
         return random.uniform(self.min_position_size, self.max_position_size)
     
     def get_random_delay(self) -> int:
-        """Случайная задержка между сделками"""
+        """Random delay between trades"""
         return random.randint(self.delay_between_trades_min, self.delay_between_trades_max)
     
     def get_random_take_profit(self) -> float:
-        """Случайный take profit"""
+        """Random take profit"""
         return random.uniform(self.take_profit_percent_min, self.take_profit_percent_max)
     
     def get_random_stop_loss(self) -> float:
-        """Случайный stop loss"""
+        """Random stop loss"""
         return random.uniform(self.stop_loss_percent_min, self.stop_loss_percent_max)
     
     def get_random_slippage(self) -> float:
-        """Случайный slippage"""
+        """Random slippage"""
         return random.uniform(self.slippage_min, self.slippage_max)
 
 
 class PacificaBot:
     """
-    Volume Bot для Pacifica DEX
+    Volume Bot for Pacifica DEX
     
-    Согласно официальной документации:
+    According to official documentation:
     https://docs.pacifica.fi/api-documentation/api
     """
     
@@ -129,10 +129,10 @@ class PacificaBot:
     ):
         """
         Args:
-            private_key: Приватный ключ Solana кошелька или API Agent (base58)
-            public_key: Публичный ключ основного аккаунта (base58)
-            agent_wallet: Публичный ключ API Agent (если используется)
-            config: Конфигурация бота
+            private_key: Solana wallet private key or API Agent (base58)
+            public_key: Main account public key (base58)
+            agent_wallet: API Agent public key (if used)
+            config: Bot configuration
         """
         self.private_key = private_key
         self.public_key = public_key
@@ -145,10 +145,10 @@ class PacificaBot:
         self.current_take_profit = self.config.get_random_take_profit()
         self.current_stop_loss = self.config.get_random_stop_loss()
         
-        # Плечо (фиксированное значение из конфига)
+        # Leverage (fixed value from config)
         self.current_leverage = self.config.leverage
         
-        # Статистика
+        # Statistics
         self.total_volume = 0.0
         self.total_pnl = 0.0
         self.trades_count = 0
@@ -161,8 +161,8 @@ class PacificaBot:
         await self.close()
         
     async def init(self):
-        """Инициализация клиентов"""
-        logger.info(f"{Fore.GREEN}Инициализация Pacifica клиентов...")
+        """Initializing clients"""
+        logger.info(f"{Fore.GREEN}Initializing Pacifica clients...")
         
         self.exchange = Exchange(
             private_key=self.private_key,
@@ -177,22 +177,22 @@ class PacificaBot:
             self.exchange.info.public_key = self.exchange.public_key
             self.exchange.info.agent_wallet = self.exchange.agent_wallet
             self.exchange.info.expiry_window = self.exchange.expiry_window
-            logger.info(f"{Fore.GREEN}✓ Info настроен с подписью для авторизованных GET запросов")
+            logger.info(f"{Fore.GREEN}✓ Info configured with signature for authorized GET requests")
             logger.debug(f"  Public key: {self.exchange.info.public_key}")
             if self.exchange.info.agent_wallet:
                 logger.debug(f"  Agent wallet: {self.exchange.info.agent_wallet}")
         else:
-            logger.warning(f"{Fore.YELLOW}⚠ Exchange не имеет keypair - GET запросы к приватным эндпоинтам могут не работать")
+            logger.warning(f"{Fore.YELLOW}⚠ Exchange does not have keypair - GET requests to private endpoints may not work")
         
-        logger.info(f"{Fore.GREEN}✓ Клиенты инициализированы")
+        logger.info(f"{Fore.GREEN}✓ Clients initialized")
         
     async def close(self):
-        """Закрытие соединений"""
+        """Closing connections"""
         if self.exchange:
             await self.exchange.close()
             
     async def get_account_info(self) -> Optional[AccountInfo]:
-        """Получение информации об аккаунте"""
+        """Getting account information"""
         try:
             from pacifica_sdk.utils.tools import build_signer_request
             from pacifica_sdk.enums import OperationType
@@ -204,7 +204,7 @@ class PacificaBot:
                 account = await self.exchange.info.get_account_info(params)
                 return account
             except Exception as e1:
-                logger.debug(f"Попытка через Info не удалась: {e1}")
+                logger.debug(f"Attempt via Info failed: {e1}")
                 
                 timestamp = int(time.time() * 1000)
                 expiry_window = self.exchange.expiry_window
@@ -240,15 +240,15 @@ class PacificaBot:
                             return AccountInfo.model_validate(data["data"])
                     else:
                         text = await response.text()
-                        logger.error(f"Ошибка HTTP {response.status}: {text[:200]}")
+                        logger.error(f"HTTP error {response.status}: {text[:200]}")
                         return None
                         
         except Exception as e:
-            logger.error(f"Ошибка получения аккаунта: {e}")
+            logger.error(f"Error getting account: {e}")
             return None
             
     async def get_balance(self) -> Optional[float]:
-        """Получение доступного баланса"""
+        """Getting available balance"""
         account = await self.get_account_info()
         if account:
             if hasattr(account, 'available_to_spend'):
@@ -261,42 +261,42 @@ class PacificaBot:
         return None
         
     async def get_markets(self) -> List[MarketInfo]:
-        """Получение списка рынков"""
+        """Getting list of markets"""
         try:
             markets = await self.exchange.info.get_market_info()
             return markets
         except Exception as e:
-            logger.error(f"Ошибка получения рынков: {e}")
+            logger.error(f"Error getting markets: {e}")
             return []
             
     async def get_prices(self, retries: int = 3) -> List[PriceInfo]:
-        """Получение текущих цен с таймаутом и повторными попытками"""
+        """Getting current prices with timeout and retries"""
         for attempt in range(retries):
             try:
-                logger.debug(f"Запрос цен через API (попытка {attempt + 1}/{retries})...")
-                # Добавляем таймаут для запроса (30 секунд)
+                logger.debug(f"Requesting prices via API (attempt {attempt + 1}/{retries})...")
+                # Adding timeout for request (30 seconds)
                 prices = await asyncio.wait_for(
                     self.exchange.info.get_prices(),
                     timeout=30.0
                 )
                 if prices:
-                    logger.debug(f"✓ Получено цен: {len(prices)}")
+                    logger.debug(f"✓ Received prices: {len(prices)}")
                     return prices
                 else:
-                    logger.warning(f"Пустой ответ от API (попытка {attempt + 1}/{retries})")
+                    logger.warning(f"Empty response from API (attempt {attempt + 1}/{retries})")
             except asyncio.TimeoutError:
-                logger.warning(f"Таймаут получения цен (попытка {attempt + 1}/{retries})")
+                logger.warning(f"Timeout getting prices (attempt {attempt + 1}/{retries})")
                 if attempt < retries - 1:
-                    await asyncio.sleep(2 * (attempt + 1))  # Экспоненциальная задержка
+                    await asyncio.sleep(2 * (attempt + 1))  # Exponential delay
                     continue
             except Exception as e:
                 error_str = str(e)
-                logger.error(f"Ошибка получения цен (попытка {attempt + 1}/{retries}): {error_str}")
+                logger.error(f"Error getting prices (attempt {attempt + 1}/{retries}): {error_str}")
                 if "CloudFront" in error_str or "403" in error_str:
-                    # CloudFront блокирует - пробуем ещё раз с задержкой
+                    # CloudFront is blocking - trying again with delay
                     if attempt < retries - 1:
                         wait_time = 5 * (attempt + 1)
-                        logger.info(f"CloudFront блокирует, ждём {wait_time}с...")
+                        logger.info(f"CloudFront is blocking, waiting {wait_time}s...")
                         await asyncio.sleep(wait_time)
                         continue
                 elif attempt < retries - 1:
@@ -305,63 +305,63 @@ class PacificaBot:
                 import traceback
                 logger.debug(f"Traceback: {traceback.format_exc()}")
         
-        logger.error("Не удалось получить цены после всех попыток")
+        logger.error("Failed to get prices after all attempts")
         return []
             
     async def get_current_price(self, symbol: str) -> Optional[float]:
-        """Получение текущей цены для символа"""
-        # Пробуем получить через get_prices
+        """Getting current price for symbol"""
+        # Trying to get via get_prices
         prices = await self.get_prices()
         if prices:
             for price_info in prices:
                 if price_info.symbol == symbol:
-                    # Согласно SDK: PriceInfo имеет поле 'mark', а не 'mark_price'
+                    # According to SDK: PriceInfo has field 'mark', not 'mark_price'
                     price = float(price_info.mark)
-                    logger.debug(f"Цена {symbol}: ${price:.2f}")
+                    logger.debug(f"Price {symbol}: ${price:.2f}")
                     return price
         
-        # Fallback: пробуем получить через markets (если есть mark_price)
+        # Fallback: trying to get via markets (if mark_price exists)
         logger.warning(f"Цена {symbol} не найдена в prices, пробуем через markets...")
         try:
             markets = await self.get_markets()
             for market in markets:
                 if market.symbol == symbol:
-                    # Проверяем разные поля для цены
+                    # Checking different fields for price
                     for price_field in ['mark_price', 'index_price', 'last_price', 'price']:
                         if hasattr(market, price_field):
                             price_value = getattr(market, price_field)
                             if price_value:
                                 try:
                                     price = float(price_value)
-                                    logger.info(f"Цена {symbol} из markets: ${price:.2f}")
+                                    logger.info(f"Price {symbol} from markets: ${price:.2f}")
                                     return price
                                 except (ValueError, TypeError):
                                     continue
         except Exception as e:
-            logger.debug(f"Ошибка получения цены через markets: {e}")
+            logger.debug(f"Error getting price via markets: {e}")
         
         logger.error(f"Не удалось получить цену для {symbol}")
         return None
         
     async def get_funding_rate(self, symbol: str) -> Optional[float]:
-        """Получение funding rate для символа"""
+        """Getting funding rate for symbol"""
         markets = await self.get_markets()
         for market in markets:
             if market.symbol == symbol:
-                # Проверяем оба поля: funding_rate и next_funding_rate
+                # Checking both fields: funding_rate and next_funding_rate
                 current_funding = float(market.funding_rate)
                 next_funding = float(market.next_funding_rate)
                 
-                # Логируем для отладки
+                # Logging for debugging
                 logger.debug(f"{symbol} - Current funding: {current_funding}, Next funding: {next_funding}")
                 
-                # Используем next_funding_rate (следующий funding rate)
-                # так как он более актуален для принятия решений
+                # Using next_funding_rate (next funding rate)
+                # as it is more relevant for decision making
                 return next_funding
         return None
         
     async def get_tick_size(self, symbol: str) -> Optional[float]:
-        """Получение tick size для символа"""
+        """Getting tick size for symbol"""
         markets = await self.get_markets()
         for market in markets:
             if market.symbol == symbol:
@@ -369,7 +369,7 @@ class PacificaBot:
         return None
         
     async def get_lot_size(self, symbol: str) -> Optional[float]:
-        """Получение lot size (минимальный размер ордера) для символа"""
+        """Getting lot size (minimum order size) for symbol"""
         markets = await self.get_markets()
         for market in markets:
             if market.symbol == symbol:
@@ -377,29 +377,29 @@ class PacificaBot:
         return None
         
     def round_to_lot(self, amount: float, lot_size: float) -> str:
-        """Округление количества до кратного lot size"""
+        """Rounding amount to lot size multiple"""
         if lot_size <= 0:
             return str(amount)
-        # Округляем вниз до ближайшего кратного lot_size
+        # Rounding down to nearest lot_size multiple
         rounded = (amount // lot_size) * lot_size
-        # Убираем лишние нули
+        # Removing extra zeros
         return f"{rounded:.{len(str(lot_size).split('.')[-1])}f}".rstrip('0').rstrip('.')
         
     def round_to_tick(self, price: float, tick_size: float) -> str:
-        """Округление цены до кратного tick size"""
+        """Rounding price to tick size multiple"""
         if tick_size <= 0:
             return str(price)
-        # Округляем до ближайшего кратного tick_size
+        # Rounding to nearest tick_size multiple
         rounded = round(price / tick_size) * tick_size
         
-        # Определяем количество знаков после запятой из tick_size
+        # Determining number of decimal places from tick_size
         tick_str = str(tick_size)
         if '.' in tick_str:
             decimals = len(tick_str.split('.')[-1].rstrip('0'))
         else:
             decimals = 0
             
-        # Форматируем с правильным количеством знаков
+        # Formatting with correct number of digits
         if decimals > 0:
             formatted = f"{rounded:.{decimals}f}"
         else:
@@ -408,72 +408,72 @@ class PacificaBot:
         return formatted
         
     async def get_max_leverage(self, symbol: str) -> Optional[int]:
-        """Получение максимального плеча для рынка"""
+        """Getting maximum leverage for market"""
         try:
             markets = await self.get_markets()
             for market in markets:
                 if market.symbol == symbol:
                     max_leverage = int(market.max_leverage) if hasattr(market, 'max_leverage') else None
-                    logger.debug(f"Максимальное плечо для {symbol}: {max_leverage}x")
+                    logger.debug(f"Maximum leverage for {symbol}: {max_leverage}x")
                     return max_leverage
             return None
         except Exception as e:
-            logger.debug(f"Ошибка получения максимального плеча для {symbol}: {e}")
+            logger.debug(f"Error getting maximum leverage for {symbol}: {e}")
             return None
     
     async def set_leverage(self, symbol: str, leverage: int) -> bool:
         """
-        Установка плеча для рынка
+        Setting leverage for market
         
-        Для открытых позиций можно только увеличивать плечо
+        For open positions, leverage can only be increased
         """
         try:
-            # Проверяем, есть ли открытая позиция для этого символа
+            # Checking if there is open position for this symbol
             positions = await self.get_positions(fast_mode=True)
             current_position_leverage = None
             
             for pos in positions:
                 if pos.symbol == symbol and abs(float(pos.amount)) > 0.000001:
-                    # Есть открытая позиция - получаем текущее плечо
+                    # There is open position - getting current leverage
                     if hasattr(pos, 'leverage') and pos.leverage:
                         current_position_leverage = int(pos.leverage)
-                        logger.debug(f"Найдена открытая позиция {symbol} с плечом {current_position_leverage}x")
+                        logger.debug(f"Found open position {symbol} with leverage {current_position_leverage}x")
                     break
             
-            # Если есть открытая позиция, проверяем правило: можно только увеличивать
+            # If there is open position, checking rule: can only increase
             if current_position_leverage is not None:
                 if leverage < current_position_leverage:
                     logger.warning(
-                        f"{Fore.YELLOW}⚠ Для открытой позиции {symbol} можно только УВЕЛИЧИВАТЬ плечо. "
-                        f"Текущее: {current_position_leverage}x, запрошенное: {leverage}x. "
-                        f"Используем текущее {current_position_leverage}x"
+                        f"{Fore.YELLOW}⚠ For open position {symbol} leverage can only be INCREASED. "
+                        f"Current: {current_position_leverage}x, requested: {leverage}x. "
+                        f"Using current {current_position_leverage}x"
                     )
                     leverage = current_position_leverage
                 elif leverage == current_position_leverage:
-                    logger.info(f"Плечо {symbol} уже установлено на {leverage}x")
+                    logger.info(f"Leverage {symbol} already set to {leverage}x")
                     return True
             
-            # Проверяем максимальное плечо для рынка
+            # Checking maximum leverage for market
             max_leverage = await self.get_max_leverage(symbol)
             if max_leverage:
                 if leverage > max_leverage:
                     logger.warning(
-                        f"{Fore.YELLOW}Плечо {leverage}x превышает максимальное для {symbol} "
-                        f"({max_leverage}x). Используем {max_leverage}x"
+                        f"{Fore.YELLOW}Leverage {leverage}x exceeds maximum for {symbol} "
+                        f"({max_leverage}x). Using {max_leverage}x"
                     )
                     leverage = max_leverage
                 elif leverage < 1:
                     logger.warning(
-                        f"{Fore.YELLOW}Плечо {leverage}x слишком мало для {symbol}. "
-                        f"Используем минимальное 1x"
+                        f"{Fore.YELLOW}Leverage {leverage}x too low for {symbol}. "
+                        f"Using minimum 1x"
                     )
                     leverage = 1
             else:
-                logger.debug(f"Не удалось получить максимальное плечо для {symbol}, используем запрошенное {leverage}x")
+                logger.debug(f"Failed to get maximum leverage for {symbol}, using requested {leverage}x")
             
             update = UpdateLeverage(symbol=symbol, leverage=leverage)
             await self.exchange.update_leverage(update)
-            logger.info(f"{Fore.GREEN}✓ Плечо {leverage}x установлено для {symbol}")
+            logger.info(f"{Fore.GREEN}✓ Leverage {leverage}x set for {symbol}")
             return True
             
         except ApiError as e:
@@ -481,7 +481,7 @@ class PacificaBot:
             error_msg = e.error_message if hasattr(e, 'error_message') else str(e)
             error_code = e.code if hasattr(e, 'code') else None
             
-            # Проверяем, есть ли открытая позиция
+            # Checking if there is open position
             positions = await self.get_positions(fast_mode=True)
             has_open_position = False
             current_pos_leverage = None
@@ -493,57 +493,57 @@ class PacificaBot:
                         current_pos_leverage = int(pos.leverage)
                     break
             
-            # Если ошибка о недопустимом плече
+            # If error about invalid leverage
             if "InvalidLeverage" in error_str or "invalid leverage" in error_msg.lower() or (error_code and error_code == 400):
                 if has_open_position and current_pos_leverage:
-                    # Для открытых позиций можно только увеличивать плечо
+                    # For open positions, leverage can only be increased
                     if leverage < current_pos_leverage:
                         logger.error(
-                            f"{Fore.RED}✗ Нельзя уменьшить плечо для открытой позиции {symbol}. "
-                            f"Текущее: {current_pos_leverage}x, запрошенное: {leverage}x"
+                            f"{Fore.RED}✗ Cannot decrease leverage for open position {symbol}. "
+                            f"Current: {current_pos_leverage}x, requested: {leverage}x"
                         )
                         return False
                     else:
-                        # Пробуем увеличить плечо
+                        # Trying to increase leverage
                         logger.warning(
                             f"{Fore.YELLOW}Плечо {leverage}x недопустимо для {symbol} с открытой позицией. "
                             f"Текущее: {current_pos_leverage}x. Пробуем увеличить..."
                         )
-                        # Пробуем увеличить плечо, начиная с leverage + 1 до max_leverage
+                        # Trying to increase leverage, начиная с leverage + 1 до max_leverage
                         max_leverage = await self.get_max_leverage(symbol)
                         if max_leverage:
                             for test_leverage in range(leverage + 1, max_leverage + 1):
                                 try:
-                                    logger.debug(f"Пробуем установить плечо {test_leverage}x для {symbol}...")
+                                    logger.debug(f"Trying to set leverage {test_leverage}x for {symbol}...")
                                     update = UpdateLeverage(symbol=symbol, leverage=test_leverage)
                                     await self.exchange.update_leverage(update)
                                     logger.info(
-                                        f"{Fore.GREEN}✓ Плечо {test_leverage}x установлено для {symbol} "
-                                        f"(вместо запрошенного {leverage}x)"
+                                        f"{Fore.GREEN}✓ Leverage {test_leverage}x set for {symbol} "
+                                        f"(instead of requested {leverage}x)"
                                     )
                                     self.current_leverage = test_leverage
                                     return True
                                 except Exception:
                                     continue
                         logger.error(
-                            f"{Fore.RED}✗ Не удалось установить допустимое плечо для {symbol} с открытой позицией"
+                            f"{Fore.RED}✗ Failed to set valid leverage for {symbol} with open position"
                         )
                         return False
                 else:
-                    # Нет открытой позиции - пробуем уменьшить плечо
+                    # No open position - trying to decrease leverage
                     logger.warning(
                         f"{Fore.YELLOW}Плечо {leverage}x недопустимо для {symbol} "
                         f"(ошибка: {error_msg}), пробуем уменьшить..."
                     )
-                    # Пробуем уменьшить плечо, начиная с leverage - 1 до 1
+                    # Trying to decrease leverage, starting from leverage - 1 to 1
                     for test_leverage in range(leverage - 1, 0, -1):
                         try:
-                            logger.debug(f"Пробуем установить плечо {test_leverage}x для {symbol}...")
+                            logger.debug(f"Trying to set leverage {test_leverage}x for {symbol}...")
                             update = UpdateLeverage(symbol=symbol, leverage=test_leverage)
                             await self.exchange.update_leverage(update)
                             logger.info(
-                                f"{Fore.GREEN}✓ Плечо {test_leverage}x установлено для {symbol} "
-                                f"(вместо запрошенного {leverage}x)"
+                                f"{Fore.GREEN}✓ Leverage {test_leverage}x set for {symbol} "
+                                f"(instead of requested {leverage}x)"
                             )
                             self.current_leverage = test_leverage
                             return True
@@ -551,50 +551,50 @@ class PacificaBot:
                             if test_leverage == 1:
                                 logger.error(
                                     f"{Fore.RED}✗ Не удалось установить допустимое плечо для {symbol}. "
-                                    f"Последняя ошибка: {e2}"
+                                    f"Last error: {e2}"
                                 )
                                 return False
                             continue
             else:
                 logger.error(
-                    f"{Fore.RED}Ошибка установки плеча для {symbol}: "
+                    f"{Fore.RED}Error setting leverage for {symbol}: "
                     f"[{e.status_code}] code={error_code} message='{error_msg}'"
                 )
                 return False
                 
         except Exception as e:
             error_str = str(e)
-            # Если ошибка о недопустимом плече - пробуем уменьшить
+            # If error about invalid leverage - пробуем уменьшить
             if "InvalidLeverage" in error_str or "invalid leverage" in error_str.lower():
                 logger.warning(f"{Fore.YELLOW}Плечо {leverage}x недопустимо для {symbol}, пробуем уменьшить...")
-                # Пробуем уменьшить плечо, начиная с leverage - 1 до 1
+                # Trying to decrease leverage, starting from leverage - 1 to 1
                 for test_leverage in range(leverage - 1, 0, -1):
                     try:
-                        logger.debug(f"Пробуем установить плечо {test_leverage}x для {symbol}...")
+                        logger.debug(f"Trying to set leverage {test_leverage}x for {symbol}...")
                         update = UpdateLeverage(symbol=symbol, leverage=test_leverage)
                         await self.exchange.update_leverage(update)
                         logger.info(
                             f"{Fore.GREEN}✓ Плечо {test_leverage}x установлено для {symbol} "
                             f"(вместо запрошенного {leverage}x)"
                         )
-                        # Обновляем текущее плечо для этого рынка
+                        # Updating current leverage for this market
                         self.current_leverage = test_leverage
                         return True
                     except Exception as e2:
                         if test_leverage == 1:
                             logger.error(
-                                f"{Fore.RED}✗ Не удалось установить допустимое плечо для {symbol}: {e2}"
+                                f"{Fore.RED}✗ Failed to set valid leverage for {symbol}: {e2}"
                             )
                             return False
                         continue
             else:
-                logger.error(f"{Fore.RED}Ошибка установки плеча для {symbol}: {e}")
+                logger.error(f"{Fore.RED}Error setting leverage for {symbol}: {e}")
                 import traceback
                 logger.debug(f"Traceback: {traceback.format_exc()}")
                 return False
             
     async def get_positions(self, retries: int = 3, fast_mode: bool = False) -> List[PositionInfo]:
-        """Получение открытых позиций с повторными попытками"""
+        """Getting open positions with retries"""
         from pacifica_sdk.utils.tools import build_signer_request, get_timestamp_ms
         from pacifica_sdk.enums import OperationType
         from pacifica_sdk.models.responses import ApiResponse
@@ -654,15 +654,15 @@ class PacificaBot:
                 if "CloudFront" in error_str or "403" in error_str or "Failed to decode JSON" in error_str:
                     if attempt < retries - 1:
                         if fast_mode:
-                            # В быстром режиме используем короткие задержки: 2, 4, 8 секунд
+                            # In fast mode using short delays: 2, 4, 8 seconds
                             base_delay = 2 * (2 ** attempt)
                             jitter = random.uniform(0, base_delay * 0.3)
-                            wait_time = min(base_delay + jitter, 10)  # Максимум 10 секунд
+                            wait_time = min(base_delay + jitter, 10)  # Maximum 10 seconds
                         else:
-                            # В обычном режиме: 3, 6, 12 секунд (меньше, чем было)
+                            # In normal mode: 3, 6, 12 seconds (less than before)
                             base_delay = 3 * (2 ** attempt)
                             jitter = random.uniform(0, base_delay * 0.3)
-                            wait_time = min(base_delay + jitter, 15)  # Максимум 15 секунд
+                            wait_time = min(base_delay + jitter, 15)  # Maximum 15 seconds
                         
                         logger.debug(f"CloudFront блокирует (попытка {attempt + 1}/{retries}), ждём {wait_time:.1f}с...")
                         await asyncio.sleep(wait_time)
@@ -671,8 +671,8 @@ class PacificaBot:
                         logger.debug(f"CloudFront блокирует после {retries} попыток, возвращаем пустой список")
                         return []
                 else:
-                    logger.error(f"Ошибка получения позиций: {e}")
-                    # Для других ошибок не делаем повторные попытки
+                    logger.error(f"Error getting positions: {e}")
+                    # For other errors not doing retries
                     return []
         
         return []
@@ -696,17 +696,17 @@ class PacificaBot:
             reduce_only: Только для закрытия позиции
         """
         try:
-            # Конвертируем размер из USD в количество базовой валюты
+            # Converting size from USD to base currency amount
             if not price:
                 price = await self.get_current_price(symbol)
                 if not price:
                     logger.error(f"Не удалось получить цену для {symbol}")
                     return None
             
-            # Размер в базовой валюте = размер в USD / цена
+            # Size in base currency = size in USD / price
             amount_base = size_usd / price
             
-            # Округляем до lot size
+            # Rounding to lot size
             lot_size = await self.get_lot_size(symbol)
             if lot_size:
                 amount_str = self.round_to_lot(amount_base, lot_size)
@@ -720,7 +720,7 @@ class PacificaBot:
                 return None
             
             if price and self.config.use_maker_orders:
-                # Limit ордер (maker) - округляем цену до tick size
+                # Limit order (maker) - rounding price to tick size
                 tick_size = await self.get_tick_size(symbol)
                 if tick_size:
                     price_str = self.round_to_tick(price, tick_size)
@@ -736,7 +736,7 @@ class PacificaBot:
                     reduce_only=reduce_only
                 )
             else:
-                # Market ордер
+                # Market order
                 order = CreateMarketOrder(
                     symbol=symbol,
                     side=side,
@@ -754,11 +754,11 @@ class PacificaBot:
             return None
             
         except Exception as e:
-            logger.error(f"Ошибка размещения ордера: {e}")
+            logger.error(f"Error placing order: {e}")
             return None
             
     async def cancel_order(self, order_id: int, symbol: str) -> bool:
-        """Отмена ордера"""
+        """Canceling order"""
         try:
             cancel = CancelOrder(order_id=order_id, symbol=symbol)
             result = await self.exchange.cancel_order(cancel)
@@ -771,7 +771,7 @@ class PacificaBot:
             return False
     
     async def get_open_orders(self, symbol: Optional[str] = None) -> List[OpenOrderInfo]:
-        """Получение открытых ордеров"""
+        """Getting open orders"""
         try:
             params = GetOpenOrders(account=self.public_key)
             if symbol:
@@ -783,11 +783,11 @@ class PacificaBot:
                 orders = await self.exchange.info.get_open_orders(params)
                 return orders
         except Exception as e:
-            logger.debug(f"Ошибка получения открытых ордеров: {e}")
+            logger.debug(f"Error getting open orders: {e}")
             return []
     
     async def cancel_all_orders(self, symbol: Optional[str] = None, exclude_reduce_only: bool = False) -> bool:
-        """Отмена всех ордеров"""
+        """Canceling all orders"""
         try:
             if symbol:
                 # Отменяем ордера для конкретного символа
@@ -804,7 +804,7 @@ class PacificaBot:
                     exclude_reduce_only=exclude_reduce_only,
                     symbol=None
                 )
-                logger.info(f"{Fore.YELLOW}Отмена всех ордеров для всех символов...")
+                logger.info(f"{Fore.YELLOW}Canceling all orders for all symbols...")
             
             result = await self.exchange.cancel_all_orders(cancel_request)
             
@@ -813,17 +813,17 @@ class PacificaBot:
                 logger.info(f"{Fore.GREEN}✓ Отменено ордеров: {cancelled_count}")
                 return True
             else:
-                logger.warning("Не удалось получить информацию об отменённых ордерах")
+                logger.warning("Failed to get information about cancelled orders")
                 return True  # Считаем успешным, если нет ошибки
                 
         except ApiError as e:
             logger.error(
-                f"{Fore.RED}Ошибка отмены всех ордеров: "
+                f"{Fore.RED}Error canceling all orders: "
                 f"[{e.status_code}] code={e.code} message='{e.error_message}'"
             )
             return False
         except Exception as e:
-            logger.error(f"{Fore.RED}Ошибка отмены всех ордеров: {e}")
+            logger.error(f"{Fore.RED}Error canceling all orders: {e}")
             return False
     
     async def close_all_positions(self) -> bool:
@@ -836,7 +836,7 @@ class PacificaBot:
         try:
             positions = await self.get_positions()
             if not positions:
-                logger.debug("Нет открытых позиций для закрытия")
+                logger.debug("No open positions to close")
                 return True
             
             closed_count = 0
@@ -854,7 +854,7 @@ class PacificaBot:
             
             return True
         except Exception as e:
-            logger.error(f"{Fore.RED}Ошибка закрытия всех позиций: {e}")
+            logger.error(f"{Fore.RED}Error closing all positions: {e}")
             return False
     
     async def cleanup_before_trade(self):
@@ -863,24 +863,24 @@ class PacificaBot:
         - Отменяет все открытые ордера
         - Закрывает все открытые позиции
         """
-        logger.info(f"{Fore.CYAN}🧹 Очистка перед новой сделкой...")
+        logger.info(f"{Fore.CYAN}🧹 Cleaning up before new trade...")
         
-        # Сначала закрываем все позиции
+        # First closing all positions
         await self.close_all_positions()
         
-        # Ждём немного, чтобы позиции закрылись
+        # Waiting a bit for positions to close
         await asyncio.sleep(2)
         
-        # Затем отменяем все оставшиеся ордера (включая reduce-only)
+        # Then cancelling all remaining orders (including reduce-only)
         await self.cancel_all_orders(exclude_reduce_only=False)
         
-        # Ещё одна небольшая задержка для завершения операций
+        # Another small delay for completing operations
         await asyncio.sleep(1)
         
-        logger.info(f"{Fore.GREEN}✓ Очистка завершена")
+        logger.info(f"{Fore.GREEN}✓ Cleanup completed")
     
     async def close_position(self, symbol: str) -> bool:
-        """Закрытие позиции"""
+        """Closing position"""
         positions = await self.get_positions()
         position_found = False
         
@@ -914,10 +914,10 @@ class PacificaBot:
                 )
                 
                 if result:
-                    # Ждём немного, чтобы ордер исполнился
+                    # Waiting a bit for order to execute
                     await asyncio.sleep(2)
                     
-                    # Проверяем, закрылась ли позиция
+                    # Checking if position closed
                     positions_after = await self.get_positions(fast_mode=True)
                     position_closed = True
                     for pos_after in positions_after:
@@ -925,7 +925,7 @@ class PacificaBot:
                             position_closed = False
                             break
                     
-                    # Если позиция закрыта, отменяем все открытые ордера для этого символа
+                    # If position closed, cancelling all open orders for this symbol
                     if position_closed:
                         logger.debug(f"Позиция {symbol} закрыта, проверяем открытые ордера...")
                         open_orders = await self.get_open_orders(symbol)
@@ -945,7 +945,7 @@ class PacificaBot:
                     return False
         
         if not position_found:
-            # Позиции нет, но проверим, нет ли открытых ордеров для этого символа
+            # No position, but checking if there are open orders for this symbol
             open_orders = await self.get_open_orders(symbol)
             if open_orders:
                 logger.info(f"{Fore.YELLOW}Позиции {symbol} нет, но найдено {len(open_orders)} открытых ордеров, отменяем...")
@@ -966,15 +966,15 @@ class PacificaBot:
         take_profit_percent: float,
         stop_loss_percent: float
     ) -> bool:
-        """Установка Take Profit и Stop Loss для позиции через API"""
+        """Setting Take Profit and Stop Loss for position via API"""
         try:
-            # Сначала проверяем, что позиция действительно открыта
+            # First checking that position is really open
             positions = await self.get_positions(fast_mode=True)
             position_exists = False
             for pos in positions:
                 if pos.symbol == symbol and abs(float(pos.amount)) > 0.000001:
                     position_exists = True
-                    # Проверяем, что сторона позиции совпадает
+                    # Checking that position side matches
                     if pos.side != side:
                         logger.warning(
                             f"Сторона позиции не совпадает: ожидали {side.value}, "
@@ -1023,7 +1023,7 @@ class PacificaBot:
             
             tpsl_request = CreateTPSLOrder(
                 symbol=symbol,
-                side=stop_order_side,  # Сторона для стоп-ордеров (противоположная позиции)
+                side=stop_order_side,  # Side for stop orders (opposite to position)
                 take_profit=tp_order,
                 stop_loss=sl_order
             )
@@ -1124,7 +1124,7 @@ class PacificaBot:
             return False
         
     async def select_best_market(self) -> Optional[str]:
-        """Выбор лучшего рынка на основе funding rate"""
+        """Selecting best market based on funding rate"""
         best_market = None
         best_score = -float('inf')
         
@@ -1142,28 +1142,28 @@ class PacificaBot:
         return best_market or self.config.markets[0]
         
     async def determine_side(self, symbol: str) -> Optional[Side]:
-        """Определение направления на основе funding rate"""
+        """Determining direction based on funding rate"""
         funding = await self.get_funding_rate(symbol)
         
         if funding is None:
             logger.warning(f"Не удалось получить funding rate для {symbol}")
             return None
             
-        # Funding rate может быть в разных форматах:
-        # - Как десятичная дробь: -0.0003 = -0.03%
-        # - Как процент: -0.000003 = -0.0003%
-        # Проверяем значение
+        # Funding rate can be in different formats:
+        # - As decimal fraction: -0.0003 = -0.03%
+        # - As percentage: -0.000003 = -0.0003%
+        # Checking value
         
-        # Логируем в процентах для удобства
+        # Logging in percentages for convenience
         funding_percent = funding * 100
         logger.info(f"Funding rate для {symbol}: {funding:.8f} ({funding_percent:.6f}%)")
         
         if funding > 0:
-            logger.info(f"Funding rate положительный, открываем SHORT (получаем funding)")
-            return Side.ASK  # SHORT - получаем funding
+            logger.info(f"Funding rate positive, opening SHORT (receiving funding)")
+            return Side.ASK  # SHORT - receiving funding
         else:
-            logger.info(f"Funding rate отрицательный, открываем LONG (получаем funding)")
-            return Side.BID  # LONG - получаем funding
+            logger.info(f"Funding rate negative, opening LONG (receiving funding)")
+            return Side.BID  # LONG - receiving funding
             
     async def trading_cycle(self) -> bool:
         """
@@ -1172,28 +1172,28 @@ class PacificaBot:
         Returns:
             True если целевой объем достигнут, False иначе
         """
-        # Очистка перед новой сделкой: закрываем все позиции и отменяем все ордера
+        # Cleanup before new trade: closing all positions and cancelling all orders
         await self.cleanup_before_trade()
         
-        # Проверяем объем перед началом цикла
+        # Checking volume before cycle start
         if self.total_volume >= self.config.target_volume:
             return True
         
-        # Выбор рынка
+        # Selecting market
         market = await self.select_best_market()
         if not market:
-            logger.warning("Нет доступных рынков")
+            logger.warning("No available markets")
             return False
             
         logger.info(f"{Fore.CYAN}Выбран рынок: {market}")
         
-        # Определение направления
+        # Determining direction
         side = await self.determine_side(market)
         if side is None:
             logger.error(f"Не удалось определить направление для {market}")
             return False
         
-        # Используем кешированный баланс или получаем новый
+        # Using cached balance or getting new one
         balance = getattr(self, 'cached_balance', None)
         if not balance:
             balance = await self.get_balance()
@@ -1201,44 +1201,44 @@ class PacificaBot:
                 self.cached_balance = balance
                 
         if not balance or balance <= 0:
-            logger.warning("Недостаточно средств или баланс не получен")
+            logger.warning("Insufficient funds or balance not received")
             return False
             
-        # Расчет размера позиции
+        # Calculating position size
         current_price = await self.get_current_price(market)
         if not current_price:
             logger.error(f"Не удалось получить цену для {market}")
             return False
             
-        # Получаем процент от баланса для позиции (БЕЗ учета плеча)
+        # Getting percentage of balance for position (WITHOUT leverage)
         position_percent = self.config.get_random_position_size()
         
-        # Рассчитываем размер позиции в USD (БЕЗ плеча)
-        # position_percent - это процент от баланса, который мы используем
+        # Calculating position size in USD (WITHOUT leverage)
+        # position_percent is percentage of balance that we use
         position_size_base = balance * position_percent
         
-        # Комиссии (maker ~0.02%, taker ~0.05%)
+        # Fees (maker ~0.02%, taker ~0.05%)
         fee_rate = 0.0002 if self.config.use_maker_orders else 0.0005
-        safety_buffer = 0.05  # 5% запас для безопасности
+        safety_buffer = 0.05  # 5% safety buffer
         
-        # Учитываем комиссии и запас безопасности
-        # Комиссия берётся дважды (открытие + закрытие)
-        # Вычитаем комиссии из доступного баланса
+        # Accounting for fees and safety buffer
+        # Fee is taken twice (opening + closing)
+        # Subtracting fees from available balance
         available_balance = balance * (1 - safety_buffer)
         max_position_base = available_balance / (1 + fee_rate * 2)
         
-        # Ограничиваем размер позиции (БЕЗ плеча)
+        # Limiting position size (WITHOUT leverage)
         position_size_base = min(position_size_base, max_position_base)
         
-        # Применяем плечо для расчета реального размера позиции на бирже
-        # position_size_base - это сколько USD мы используем из баланса
-        # position_size_usd - это размер позиции на бирже (с плечом)
+        # Applying leverage to calculate real position size on exchange
+        # position_size_base is how much USD we use from balance
+        # position_size_usd is position size on exchange (with leverage)
         position_size_usd = position_size_base * self.current_leverage
         
-        # Проверяем, что у нас достаточно баланса
+        # Checking that we have enough balance
         required_balance = position_size_base + position_size_base * fee_rate * 2
         if required_balance > balance:
-            # Уменьшаем процент позиции, если не хватает баланса
+            # Decreasing position percentage if not enough balance
             max_percent = (balance * 0.95) / (balance * (1 + fee_rate * 2))
             position_percent = min(position_percent, max_percent)
             position_size_base = balance * position_percent
@@ -1272,10 +1272,10 @@ class PacificaBot:
         )
         
         if not entry_result:
-            logger.error("Не удалось открыть позицию")
+            logger.error("Failed to open position")
             return False
         
-        logger.info(f"{Fore.YELLOW}Ожидание исполнения ордера...")
+        logger.info(f"{Fore.YELLOW}Waiting for order execution...")
         entry_price = await self._wait_for_order_fill(
             market=market,
             order_result=entry_result,
@@ -1286,39 +1286,39 @@ class PacificaBot:
         )
         
         if not entry_price:
-            logger.error("❌ Ордер не был исполнен - позиция НЕ открыта")
-            logger.error("Бот пропустит эту сделку и перейдёт к следующей")
+            logger.error("❌ Order was not executed - position NOT opened")
+            logger.error("Bot will skip this trade and move to next")
             return False
             
         logger.info(f"{Fore.GREEN}✓ Позиция открыта @ {entry_price:.4f}")
         
-        # Небольшая задержка, чтобы позиция точно появилась в системе
+        # Small delay so position definitely appears in system
         await asyncio.sleep(2)
         
-        # Устанавливаем TP/SL через API
-        logger.info(f"{Fore.CYAN}Установка Take Profit и Stop Loss через API...")
+        # Setting TP/SL via API
+        logger.info(f"{Fore.CYAN}Setting Take Profit and Stop Loss via API...")
         tp_sl_set = await self.set_position_tpsl(
             symbol=market,
-            side=side,  # Сторона позиции (bid для LONG, ask для SHORT)
+            side=side,  # Position side (bid for LONG, ask for SHORT)
             entry_price=entry_price,
             take_profit_percent=self.current_take_profit,
             stop_loss_percent=self.current_stop_loss
         )
         
         if not tp_sl_set:
-            logger.warning(f"{Fore.YELLOW}⚠ Не удалось установить TP/SL через API, бот будет мониторить вручную")
+            logger.warning(f"{Fore.YELLOW}⚠ Failed to set TP/SL via API, bot will monitor manually")
         
-        # Удержание позиции (рандомизированное время)
+        # Holding position (randomized time)
         hold_time = self.config.get_random_hold_time() * 60
         logger.info(f"{Fore.CYAN}Удержание позиции {hold_time // 60} минут ({hold_time} секунд)...")
         await self._hold_position(market, entry_price, side, hold_time)
         
-        # Закрытие позиции
+        # Closing position
         logger.info(f"{Fore.YELLOW}Закрытие позиции {market}...")
         close_result = await self.close_position(market)
         if close_result:
-            # Ждём закрытия и получаем цену закрытия
-            await asyncio.sleep(2)  # Небольшая задержка для обновления позиций
+            # Waiting for closing and getting closing price
+            await asyncio.sleep(2)  # Small delay for updating positions
             exit_price = await self.get_current_price(market)
             if exit_price:
                 pnl = self._calculate_pnl(entry_price, exit_price, position_size_usd, side)
@@ -1332,9 +1332,9 @@ class PacificaBot:
                 if self.total_volume >= self.config.target_volume:
                     return True
             else:
-                logger.warning("Не удалось получить цену закрытия")
+                logger.warning("Failed to get closing price")
         else:
-            logger.error("Не удалось закрыть позицию")
+            logger.error("Failed to close position")
         
         return False
                 
@@ -1360,7 +1360,7 @@ class PacificaBot:
         2. Get account positions - открытые позиции
         3. Get order history by ID - история ордера
         """
-        # Получаем order_id из ответа
+        # Getting order_id from response
         order_id = order_result.get('order_id') or order_result.get('id') or order_result.get('orderId')
         
         if not order_id:
@@ -1370,10 +1370,10 @@ class PacificaBot:
         logger.info(f"{Fore.CYAN}=== Ожидание исполнения ордера #{order_id} ===")
         logger.info(f"Рынок: {market}, Сторона: {side.value}, Лимитная цена: {limit_price}")
         
-        # Для рыночных ордеров - они исполняются сразу
+        # For market orders - they execute immediately
         if not limit_price:
-            logger.info("Market ордер - проверяем исполнение...")
-            await asyncio.sleep(2)  # Небольшая задержка для обработки
+            logger.info("Market order - checking execution...")
+            await asyncio.sleep(2)  # Small delay for processing
             for price_field in ['avg_price', 'avgPrice', 'price', 'executed_price', 'fill_price']:
                 if price_field in order_result and order_result[price_field]:
                     try:
@@ -1384,7 +1384,7 @@ class PacificaBot:
                     except (ValueError, TypeError):
                         continue
             
-            # Проверяем позиции для market ордера
+            # Checking positions for market order
             positions = await self.get_positions()
             for pos in positions:
                 if pos.symbol == market:
@@ -1395,8 +1395,8 @@ class PacificaBot:
                         return entry_price
             return None
         
-        # Для лимитных ордеров - проверяем регулярно
-        check_interval = 5  # Проверяем каждые 5 секунд
+        # For limit orders - checking regularly
+        check_interval = 5  # Checking every 5 seconds
         elapsed = 0
         last_log_time = 0
         repositioned = False
@@ -1429,7 +1429,7 @@ class PacificaBot:
                             logger.info(f"{Fore.GREEN}✓✓✓ ОРДЕР #{order_id} ИСПОЛНЕН! ✓✓✓")
                             return entry_price
                         else:
-                            logger.warning(f"  ⚠ Позиция найдена, но amount слишком мал: {amount}")
+                            logger.warning(f"  ⚠ Position found, but amount too small: {amount}")
                 
                 try:
                     params = GetOpenOrders(account=self.public_key)
@@ -1481,7 +1481,7 @@ class PacificaBot:
                             
                             if history_items and len(history_items) > 0:
                                 history_order = history_items[0]
-                                logger.info(f"{Fore.GREEN}  Ордер найден в истории")
+                                logger.info(f"{Fore.GREEN}  Order found in history")
                                 
                                 if hasattr(history_order, 'filled_amount') and hasattr(history_order, 'initial_amount'):
                                     filled = float(history_order.filled_amount)
@@ -1494,16 +1494,16 @@ class PacificaBot:
                                         logger.info(f"{Fore.GREEN}✓ Ордер #{order_id} исполнен (из истории) @ {price:.4f}")
                                         return price
                         except Exception as e:
-                            logger.debug(f"Ошибка проверки order history: {e}")
+                            logger.debug(f"Error checking order history: {e}")
                             
                 except Exception as e:
                     error_str = str(e)
                     if "CloudFront" in error_str or "403" in error_str or "Failed to decode JSON" in error_str:
-                        logger.debug(f"CloudFront блокирует открытые ордера (это нормально при rate limiting), продолжаем проверку позиций...")
+                        logger.debug(f"CloudFront is blocking open orders (this is normal with rate limiting), continuing position check...")
                     else:
-                        logger.warning(f"Ошибка проверки открытых ордеров: {e}")
+                        logger.warning(f"Error checking open orders: {e}")
                 
-                # Логируем прогресс каждые 15 секунд
+                # Logging progress every 15 seconds
                 if total_elapsed - last_log_time >= 15:
                     remaining = max(0, max_wait - total_elapsed)
                     minutes = remaining // 60
@@ -1555,11 +1555,11 @@ class PacificaBot:
                         elapsed = 0
                         last_log_time = total_elapsed
                     else:
-                        logger.error("Не удалось разместить новый ордер")
+                        logger.error("Failed to place new order")
                         return None
                 
                 if total_elapsed - last_log_time >= 15:
-                    remaining = max(0, max_wait - total_elapsed)  # Не показываем отрицательные значения
+                    remaining = max(0, max_wait - total_elapsed)  # Not showing negative values
                     minutes = remaining // 60
                     seconds = remaining % 60
                     if minutes > 0:
@@ -1585,14 +1585,14 @@ class PacificaBot:
                         last_log_time = total_elapsed
                 else:
                     if total_elapsed - last_log_time >= 15:
-                        logger.warning(f"Ошибка проверки позиций: {e}")
+                        logger.warning(f"Error checking positions: {e}")
                         last_log_time = total_elapsed
             
             await asyncio.sleep(check_interval)
             elapsed += check_interval
             total_elapsed += check_interval
         
-        # Если не исполнился за отведённое время - отменяем ордер
+        # If not executed within allotted time - cancelling order
         logger.warning(f"⚠ Ордер #{order_id} не исполнился за {total_elapsed} секунд ({total_elapsed // 60} минут)")
         logger.info(f"{Fore.YELLOW}Отменяем неисполненный ордер #{order_id}...")
         
@@ -1602,18 +1602,18 @@ class PacificaBot:
         except Exception as e:
             logger.error(f"Ошибка отмены ордера #{order_id}: {e}")
         
-        logger.warning("Позиция НЕ открыта - ордер отменён из-за таймаута")
+        logger.warning("Position NOT opened - order cancelled due to timeout")
         return None
     
     async def _hold_position(self, market: str, entry_price: float, side: Side, hold_time: int):
-        """Удержание позиции с мониторингом"""
+        """Holding position with monitoring"""
         check_interval = 10
         elapsed = 0
         last_log_time = 0
         
         logger.info(f"{Fore.CYAN}Мониторинг позиции: Entry @ {entry_price:.4f}, Side: {side.value}")
         logger.info(f"Take Profit: {self.current_take_profit*100:.3f}%, Stop Loss: {self.current_stop_loss*100:.3f}%")
-        logger.info(f"{Fore.YELLOW}Примечание: Если TP/SL установлены на бирже, они сработают автоматически")
+        logger.info(f"{Fore.YELLOW}Note: If TP/SL are set on exchange, they will trigger automatically")
         
         while elapsed < hold_time:
             positions = await self.get_positions(fast_mode=True)
@@ -1624,7 +1624,7 @@ class PacificaBot:
                     break
             
             if not position_exists:
-                logger.info(f"{Fore.GREEN}✓ Позиция закрыта автоматически (вероятно, через TP/SL на бирже)")
+                logger.info(f"{Fore.GREEN}✓ Position closed automatically (probably via TP/SL on exchange)")
                 return
             
             current_price = await self.get_current_price(market)
@@ -1649,15 +1649,15 @@ class PacificaBot:
                     
                 if price_change >= self.current_take_profit:
                     logger.info(f"{Fore.GREEN}✓ Take profit достигнут программно! +{price_change*100:.3f}% (цель: {self.current_take_profit*100:.3f}%)")
-                    logger.info(f"{Fore.YELLOW}Закрываем позицию вручную...")
+                    logger.info(f"{Fore.YELLOW}Closing position manually...")
                     break
                     
                 if price_change <= -self.current_stop_loss:
                     logger.warning(f"{Fore.RED}✗ Stop loss достигнут программно! {price_change*100:.3f}% (лимит: {self.current_stop_loss*100:.3f}%)")
-                    logger.info(f"{Fore.YELLOW}Закрываем позицию вручную...")
+                    logger.info(f"{Fore.YELLOW}Closing position manually...")
                     break
             else:
-                logger.warning("Не удалось получить текущую цену для мониторинга")
+                logger.warning("Failed to get current price for monitoring")
                     
             await asyncio.sleep(check_interval)
             elapsed += check_interval
@@ -1666,7 +1666,7 @@ class PacificaBot:
             logger.info(f"{Fore.CYAN}Время удержания истекло ({hold_time // 60} минут)")
             
     def _calculate_pnl(self, entry: float, exit: float, size: float, side: Side) -> float:
-        """Расчет PnL"""
+        """Calculating PnL"""
         if side == Side.BID:
             price_diff = exit - entry
         else:
@@ -1674,14 +1674,14 @@ class PacificaBot:
             
         pnl = (price_diff / entry) * size if entry > 0 else 0
         
-        # Комиссии
+        # Fees
         fee_rate = 0.0002 if self.config.use_maker_orders else 0.0005
         fees = size * fee_rate * 2
         
         return pnl - fees
         
     async def run(self):
-        """Запуск бота"""
+        """Starting bot"""
         goatham_art = [
             " _____ _____ _____ _____ _____ _____ _____    ____  _____ _____ ",
             "|   __|     |  _  |_   _|  |  |  _  |     |  |    \\|  _  |     |",
@@ -1689,14 +1689,14 @@ class PacificaBot:
             "|_____|_____|__|__| |_| |__|__|__|__|_|_|_|  |____/|__|__|_____|"
         ]
         
-        # Вычисляем максимальную ширину ASCII-арта и нормализуем все строки до этой ширины
+        # Calculating maximum width of ASCII art and normalizing all lines to this width
         max_width = max(len(line.rstrip()) for line in goatham_art)
-        inner_width = max_width + 2  # Отступы по 1 символу с каждой стороны
-        box_width = inner_width + 2  # +2 для границ ║
+        inner_width = max_width + 2  # Padding of 1 character on each side
+        box_width = inner_width + 2  # +2 for borders ║
         
-        # Функция для создания строки с правильным выравниванием
+        # Function for creating line with correct alignment
         def make_box_line(content, color=Fore.WHITE):
-            content = content.rstrip()  # Убираем лишние пробелы справа
+            content = content.rstrip()  # Removing extra spaces on right
             padding_left = (inner_width - len(content)) // 2
             padding_right = inner_width - len(content) - padding_left
             return f"{Fore.CYAN}║{' ' * padding_left}{color}{content}{' ' * padding_right}{Fore.CYAN}║"
@@ -1704,7 +1704,7 @@ class PacificaBot:
         logger.info(f"{Fore.CYAN}╔{'═' * inner_width}╗")
         logger.info(make_box_line(""))
         
-        # Выводим ASCII-арт GOATHAM DAO
+        # Displaying ASCII art GOATHAM DAO
         for line in goatham_art:
             logger.info(make_box_line(line.rstrip(), Fore.WHITE))
         
@@ -1718,15 +1718,15 @@ class PacificaBot:
         logger.info(f"{Fore.CYAN}╚{'═' * inner_width}╝{Style.RESET_ALL}")
         
         # Логируем рандомизированные параметры для этого аккаунта
-        logger.info(f"{Fore.CYAN}Рандомизированные параметры для аккаунта:")
+        logger.info(f"{Fore.CYAN}Randomized parameters for account:")
         logger.info(f"  Плечо: {self.current_leverage}x")
         logger.info(f"  Slippage: {self.current_slippage*100:.3f}%")
         logger.info(f"  Take Profit: {self.current_take_profit*100:.3f}%")
         logger.info(f"  Stop Loss: {self.current_stop_loss*100:.3f}%")
         logger.info(f"  Размер позиции: {self.config.min_position_size*100:.0f}% - {self.config.max_position_size*100:.0f}% от баланса (без учета плеча)")
         
-        # Настройка плеча (используем рандомизированное значение)
-        # Проверяем максимальные плечи для всех рынков и корректируем текущее плечо
+        # Setting leverage (using randomized value)
+        # Checking maximum leverages for all markets and adjusting current leverage
         min_max_leverage = None
         for market in self.config.markets:
             max_leverage = await self.get_max_leverage(market)
@@ -1734,25 +1734,25 @@ class PacificaBot:
                 if min_max_leverage is None or max_leverage < min_max_leverage:
                     min_max_leverage = max_leverage
         
-        # Если текущее плечо превышает минимальное максимальное - ограничиваем
+        # If current leverage exceeds minimum maximum - limiting
         if min_max_leverage and self.current_leverage > min_max_leverage:
             logger.warning(f"Плечо {self.current_leverage}x превышает максимальное для некоторых рынков ({min_max_leverage}x). Используем {min_max_leverage}x")
             self.current_leverage = min_max_leverage
         
-        # Устанавливаем плечо для всех рынков
+        # Setting leverage for all markets
         for market in self.config.markets:
             await self.set_leverage(market, self.current_leverage)
-            await asyncio.sleep(1)  # Задержка между запросами
+            await asyncio.sleep(1)  # Delay between requests
             
-        # Получение баланса (с повторными попытками)
-        # CloudFront может блокировать запросы из-за rate limiting
-        # Добавляем задержки и увеличиваем время между попытками
+        # Getting balance (with retries)
+        # CloudFront may block requests due to rate limiting
+        # Adding delays and increasing time between attempts
         balance = None
         max_attempts = 5
         for attempt in range(max_attempts):
-            # Задержка перед запросом (избегаем rate limiting)
+            # Delay before request (avoiding rate limiting)
             if attempt > 0:
-                wait_time = min((attempt + 1) * 5, 30)  # Максимум 30 секунд
+                wait_time = min((attempt + 1) * 5, 30)  # Maximum 30 seconds
                 logger.warning(f"Попытка {attempt + 1}/{max_attempts} получения баланса, ждём {wait_time} сек...")
                 await asyncio.sleep(wait_time)
                 
@@ -1763,50 +1763,50 @@ class PacificaBot:
                 break
             
         if balance is None or balance <= 0:
-            logger.error("❌ Не удалось получить баланс через API после всех попыток!")
-            logger.error("Проверьте:")
-            logger.error("  1. Правильность API ключей в accounts.csv")
-            logger.error("  2. Бета доступ активирован на https://app.pacifica.fi")
-            logger.error("  3. Наличие средств на балансе")
-            return  # Останавливаем бота если нет баланса
+            logger.error("❌ Failed to get balance via API after all attempts!")
+            logger.error("Check:")
+            logger.error("  1. Correctness of API keys in accounts.csv")
+            logger.error("  2. Beta access activated on https://app.pacifica.fi")
+            logger.error("  3. Presence of funds on balance")
+            return  # Stopping bot if no balance
             
-        # Основной цикл
+        # Main cycle
         volume_reached = False
         while self.total_volume < self.config.target_volume:
             try:
-                # Проверяем возвращаемое значение trading_cycle
+                # Checking returned value from trading_cycle
                 volume_reached = await self.trading_cycle()
                 
-                # Если объем достигнут, выходим из цикла
+                # If volume reached, exiting cycle
                 if volume_reached or self.total_volume >= self.config.target_volume:
                     break
                 
-                # Статистика
+                # Statistics
                 progress = (self.total_volume / self.config.target_volume) * 100
                 logger.info(f"Объем: ${self.total_volume:.2f} / ${self.config.target_volume:.2f} ({progress:.1f}%)")
                 logger.info(f"PnL: ${self.total_pnl:.4f} | Сделок: {self.trades_count}")
                 
-                # Задержка (рандомизированная)
+                # Delay (randomized)
                 delay = self.config.get_random_delay()
                 logger.info(f"Ожидание {delay} секунд...")
                 await asyncio.sleep(delay)
                 
             except Exception as e:
-                logger.error(f"Ошибка в цикле: {e}")
+                logger.error(f"Error in cycle: {e}")
                 await asyncio.sleep(10)
         
-        # Целевой объем достигнут - закрываем все позиции и отменяем ордера
-        logger.info("Целевой объем достигнут. Закрытие всех позиций и отмена ордеров...")
+        # Target volume reached - closing all positions and cancelling orders
+        logger.info("Target volume reached. Closing all positions and cancelling orders...")
         
-        # Сначала отменяем все ордера
+        # First cancelling all orders
         await self.cancel_all_orders(exclude_reduce_only=False)
         await asyncio.sleep(1)
         
-        # Затем закрываем все позиции
+        # Then closing all positions
         await self.close_all_positions()
         await asyncio.sleep(2)
         
-        # Финальная проверка - убеждаемся, что все закрыто
+        # Final check - making sure everything is closed
         positions = await self.get_positions()
         if positions:
             for pos in positions:
@@ -1815,18 +1815,18 @@ class PacificaBot:
                     await self.close_position(pos.symbol)
                     await asyncio.sleep(1)
         
-        # Отменяем все оставшиеся ордера еще раз
+        # Cancelling all remaining orders once more
         await self.cancel_all_orders(exclude_reduce_only=False)
             
-        logger.info(f"{Fore.GREEN}Бот завершил работу")
+        logger.info(f"{Fore.GREEN}Bot completed work")
         logger.info(f"Итоговый объем: ${self.total_volume:.2f}")
         logger.info(f"Итоговый PnL: ${self.total_pnl:.4f}")
 
 
 async def main():
-    """Главная функция"""
+    """Main function"""
     
-    # Настройка логирования
+    # Setting up logging
     logger.remove()
     logger.add(
         lambda msg: print(msg, end=""),
@@ -1839,14 +1839,14 @@ async def main():
         retention="7 days"
     )
     
-    # Загрузка конфигурации
+    # Loading configuration
     config_path = Path("config.json")
     if config_path.exists():
         with open(config_path, 'r') as f:
             config_data = json.load(f)
-            # Фильтруем только нужные поля (поддерживаем новый формат с диапазонами)
+            # Filtering only needed fields (supporting new format with ranges)
             valid_fields = {
-                # Новый формат с диапазонами
+                # New format with ranges
                 'hold_time_min', 'hold_time_max', 'target_volume',
                 'leverage', 'markets',
                 'min_position_size', 'max_position_size',
@@ -1855,13 +1855,13 @@ async def main():
                 'take_profit_percent_min', 'take_profit_percent_max',
                 'stop_loss_percent_min', 'stop_loss_percent_max',
                 'slippage_min', 'slippage_max',
-                # Старый формат (для обратной совместимости)
+                # Old format (for backward compatibility)
                 'hold_time', 'leverage', 'delay_between_trades',
                 'take_profit_percent', 'stop_loss_percent', 'slippage'
             }
             filtered_data = {k: v for k, v in config_data.items() if k in valid_fields}
             
-            # Конвертируем старый формат в новый (если нужно)
+            # Converting old format to new (if needed)
             if 'hold_time' in filtered_data and 'hold_time_min' not in filtered_data:
                 hold_time = filtered_data.pop('hold_time')
                 filtered_data['hold_time_min'] = max(1, hold_time - 2)
@@ -1890,7 +1890,7 @@ async def main():
     # Загрузка аккаунта
     accounts_path = Path("accounts.csv")
     if not accounts_path.exists():
-        logger.error("Файл accounts.csv не найден!")
+        logger.error("File accounts.csv not found!")
         return
         
     import csv
@@ -1899,26 +1899,26 @@ async def main():
         account = next(reader, None)
         
     if not account:
-        logger.error("Нет аккаунтов в accounts.csv")
+        logger.error("No accounts in accounts.csv")
         return
     
-    # Определяем, используется ли API Agent или основной кошелек
-    # Если api_key == walletaddress, значит это основной кошелек, а не API Agent
+    # Determining if API Agent or main wallet is used
+    # If api_key == walletaddress, then this is main wallet, not API Agent
     api_key = account.get('api_key', '').strip()
     walletaddress = account.get('walletaddress', '').strip() if account.get('walletaddress') else None
     subaccount = account.get('subaccount', '').strip() if account.get('subaccount') else None
     main_account = walletaddress or subaccount
     
-    # Если api_key совпадает с main_account, значит это основной кошелек, не API Agent
+    # If api_key matches main_account, then this is main wallet, not API Agent
     use_api_agent = main_account and api_key != main_account
     
     # Запуск бота
     if use_api_agent:
         # API Agent Keys:
-        # private_key = приватный ключ API Agent (api_secret)
-        # public_key = публичный ключ основного аккаунта (walletaddress/subaccount)
-        # agent_wallet = публичный ключ API Agent (api_key)
-        logger.info(f"Используем API Agent Keys: Agent={api_key}, Main={main_account}")
+        # private_key = API Agent private key (api_secret)
+        # public_key = main account public key (walletaddress/subaccount)
+        # agent_wallet = API Agent public key (api_key)
+        logger.info(f"Using API Agent Keys: Agent={api_key}, Main={main_account}")
         async with PacificaBot(
             private_key=account['api_secret'],  # Приватный ключ API Agent
             public_key=main_account,            # Основной аккаунт
@@ -1927,10 +1927,10 @@ async def main():
         ) as bot:
             await bot.run()
     else:
-        # Основной кошелёк:
-        # private_key = приватный ключ основного кошелька
-        # public_key = публичный ключ основного кошелька
-        logger.info(f"Используем основной кошелёк {api_key}")
+        # Main wallet:
+        # private_key = main wallet private key
+        # public_key = main wallet public key
+        logger.info(f"Using main wallet {api_key}")
         async with PacificaBot(
             private_key=account['api_secret'],
             public_key=api_key,
@@ -1944,7 +1944,7 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Прервано пользователем")
+        logger.info("Interrupted by user")
     except Exception as e:
-        logger.exception(f"Критическая ошибка: {e}")
+        logger.exception(f"Critical error: {e}")
 

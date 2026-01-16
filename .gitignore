@@ -20,29 +20,26 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# Virtual environments
 venv/
-ENV/
 env/
-.venv/
+ENV/
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
 
-# Project specific
-accounts.csv
+# Logs
 logs/
 *.log
+
+# Config files with sensitive data
+accounts.csv
+config.json
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Secrets
-.env
-*.pem
-*.key
-

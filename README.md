@@ -1,8 +1,8 @@
 # 🌊 Pacifica Volume Bot
 
-Перед использованием зарегистрируйтесь на сайте PACIFICA: https://app.pacifica.fi?referral=bluedepp
+Before using, register on the PACIFICA website: https://app.pacifica.fi?referral=bluedepp
 
-В трейдинг окне (Join Closed Beta) используйте код:
+In the trading window (Join Closed Beta) use the code:
 
 B8EFAKQAYZTX0TKB
 1QPGJB7PX11CZB1H
@@ -21,43 +21,43 @@ KX1BTZVXSG4B641F
 YM59RHEK6Y0TB90G
 CYJ1M2186FB24BPG
 
-### Логика работы:
+### How it works:
 
-1. Открыть позицию (весь баланс с плечом)
-2. Удержать `hold_time` минут
-3. Проверять `max_check_price` (закрыть раньше если убыток превышает лимит)
-4. Закрыть позицию
-5. Повторить до достижения `target_volume`
+1. Open position (entire balance with leverage)
+2. Hold for `hold_time` minutes
+3. Check `max_check_price` (close earlier if loss exceeds limit)
+4. Close position
+5. Repeat until `target_volume` is reached
 
-## 🚀 Установка
+## 🚀 Installation
 
-### 1. Установка зависимостей
+### 1. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Создание accounts.csv
+### 2. Create accounts.csv
 
-Создайте файл `accounts.csv` по образцу `accounts_sample.csv`:
+Create an `accounts.csv` file based on the `accounts_sample.csv` template:
 
 ```csv
 account_name,api_key,api_secret,walletaddress
 main,YOUR_WALLET_PUBLIC_KEY,YOUR_WALLET_PRIVATE_KEY,YOUR_WALLET_ADDRESS
 ```
 
-**Поля:**
-- `api_key` - публичный ключ(адресс) Solana кошелька (base58)
-- `api_secret` - приватный ключ Solana кошелька (base58)
-- `walletaddress` - адрес основного аккаунта (для API Agent)
+**Fields:**
+- `api_key` - Solana wallet public key (address) (base58)
+- `api_secret` - Solana wallet private key (base58)
+- `walletaddress` - Main account address (for API Agent)
 
-### 3. Запуск
+### 3. Run
 
 ```bash
 python pacifica_bot.py
 ```
 
-## ⚙️ Конфигурация (config.json)
+## ⚙️ Configuration (config.json)
 
 ```json
 {
@@ -80,77 +80,77 @@ python pacifica_bot.py
 }
 ```
 
-### Параметры:
+### Parameters:
 
-| Параметр | Описание | Пример |
-|----------|----------|--------|
-| `hold_time_min/max` | Время удержания позиции в минутах (диапазон) | 3-5 |
-| `target_volume` | Целевой объём торгов в USD | 10000 |
-| `leverage` | Кредитное плечо | 5 |
-| `markets` | Рынки для торговли | ["BTC", "ETH", "SOL"] |
-| `min_position_size` | Минимальный размер позиции (% от баланса, БЕЗ плеча) | 0.7 (70%) |
-| `max_position_size` | Максимальный размер позиции (% от баланса, БЕЗ плеча) | 0.9 (90%) |
-| `delay_between_trades_min/max` | Задержка между сделками в секундах (диапазон) | 30-60 |
-| `use_maker_orders` | Использовать лимитные ордера (maker) вместо рыночных | true |
-| `take_profit_percent_min/max` | Take Profit в процентах (диапазон) | 0.002-0.004 (0.2%-0.4%) |
-| `stop_loss_percent_min/max` | Stop Loss в процентах (диапазон) | 0.002-0.004 (0.2%-0.4%) |
-| `slippage_min/max` | Slippage для лимитных ордеров в процентах (диапазон) | 0.0003-0.0005 (0.03%-0.05%) |
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `hold_time_min/max` | Position hold time in minutes (range) | 3-5 |
+| `target_volume` | Target trading volume in USD | 10000 |
+| `leverage` | Leverage | 5 |
+| `markets` | Markets for trading | ["BTC", "ETH", "SOL"] |
+| `min_position_size` | Minimum position size (% of balance, WITHOUT leverage) | 0.7 (70%) |
+| `max_position_size` | Maximum position size (% of balance, WITHOUT leverage) | 0.9 (90%) |
+| `delay_between_trades_min/max` | Delay between trades in seconds (range) | 30-60 |
+| `use_maker_orders` | Use limit orders (maker) instead of market orders | true |
+| `take_profit_percent_min/max` | Take Profit in percentages (range) | 0.002-0.004 (0.2%-0.4%) |
+| `stop_loss_percent_min/max` | Stop Loss in percentages (range) | 0.002-0.004 (0.2%-0.4%) |
+| `slippage_min/max` | Slippage for limit orders in percentages (range) | 0.0003-0.0005 (0.03%-0.05%) |
 
-**Важно:** 
-- `min_position_size` и `max_position_size` указываются в процентах от баланса (0.0-1.0), **БЕЗ учета плеча**
-- Софт автоматически умножает на `leverage` при расчете размера позиции на бирже
-- Например: баланс $100, `min_position_size: 0.8`, `leverage: 5` → позиция $80 без плеча → $400 с плечом 5x
+**Important:** 
+- `min_position_size` and `max_position_size` are specified as percentages of balance (0.0-1.0), **WITHOUT leverage**
+- The software automatically multiplies by `leverage` when calculating position size on the exchange
+- Example: balance $100, `min_position_size: 0.8`, `leverage: 5` → position $80 without leverage → $400 with 5x leverage
 
-## 📊 Как это работает
+## 📊 How it works
 
 ```
 ┌─────────────────────────────────────┐
-│  1. Выбор случайного рынка          │
-│     (BTC, ETH или SOL)              │
+│  1. Select random market            │
+│     (BTC, ETH or SOL)               │
 ├─────────────────────────────────────┤
-│  2. Выбор случайного направления    │
-│     (LONG или SHORT)                │
+│  2. Select random direction         │
+│     (LONG or SHORT)                 │
 ├─────────────────────────────────────┤
-│  3. Открытие позиции                │
-│     • Весь баланс × leverage        │
-│     • Лимитный ордер со slippage    │
+│  3. Open position                   │
+│     • Entire balance × leverage     │
+│     • Limit order with slippage     │
 ├─────────────────────────────────────┤
-│  4. Удержание позиции               │
-│     • hold_time минут               │
-│     • Проверка max_check_price      │
+│  4. Hold position                   │
+│     • hold_time minutes              │
+│     • Check max_check_price          │
 ├─────────────────────────────────────┤
-│  5. Закрытие позиции                │
-│     • Лимитный ордер                │
+│  5. Close position                  │
+│     • Limit order                   │
 ├─────────────────────────────────────┤
-│  6. Повторить до target_volume      │
+│  6. Repeat until target_volume      │
 └─────────────────────────────────────┘
 ```
 
-## ⚠️ Важно
+## ⚠️ Important
 
-- Бот использует **весь баланс** с плечом
-- Направление сделки выбирается **случайно** (LONG/SHORT)
-- `max_check_price` защищает от больших убытков
-- Тестируйте на небольших суммах!
+- The bot uses **entire balance** with leverage
+- Trade direction is selected **randomly** (LONG/SHORT)
+- `max_check_price` protects against large losses
+- Test with small amounts!
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 pacificavolumebot/
-├── pacifica_bot.py       # Основной код бота
-├── config.json           # Конфигурация
-├── accounts.csv          # Аккаунты (создать самому)
-├── accounts_sample.csv   # Пример аккаунтов
-├── requirements.txt      # Зависимости
-├── README.md             # Документация
-└── logs/                 # Логи (создаётся автоматически)
+├── pacifica_bot.py       # Main bot code
+├── config.json           # Configuration
+├── accounts.csv          # Accounts (create yourself)
+├── accounts_sample.csv   # Account template
+├── requirements.txt      # Dependencies
+├── README.md             # Documentation
+└── logs/                 # Logs (created automatically)
 ```
 
-## 📞 Контакты
+## 📞 Contacts
 
-**Telegram:** https://t.me/suzuich или напрямую https://t.me/suzumsky
+**Telegram:** https://t.me/suzuich or directly https://t.me/suzumsky
 
-⚠️ **Disclaimer:** Торговля криптовалютой сопряжена с рисками. Бот не гарантирует прибыль. Автор не несёт ответственности за убытки.
+⚠️ **Disclaimer:** Cryptocurrency trading involves risks. The bot does not guarantee profit. The author is not responsible for losses.
 
 **Support**
 
